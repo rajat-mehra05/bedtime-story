@@ -9,7 +9,7 @@ export const generateStoryPrompt = (inputs: StoryInputs): string => {
 - Genre: ${inputs.genre}
 - Characters: ${inputs.characters}
   **IMPORTANT**: Pay close attention to the gender specifications for each character. Use appropriate gender-specific pronouns (he/him, she/her, they/them) consistently throughout the story based on what is specified. If a character is described as a "girl" or "boy", use the corresponding pronouns. If described as "non-binary" or no gender is specified, use they/them pronouns.
-- Length: Maximum 250 words per chapter
+- Length: Maximum 500 words per chapter
 - Language: ${inputs.language === 'english' ? 'English' : inputs.language === 'hindi' ? 'Hindi' : 'Assamese'}
 ${inputs.additionalPreferences ? `- Additional preferences: ${inputs.additionalPreferences}` : ''}
 
@@ -23,7 +23,7 @@ Create exactly 5 chapters that form ONE INTERCONNECTED NARRATIVE. This is crucia
 - Chapter 5: MUST include the complete ending of the story with full resolution
 
 **Chapter Guidelines:**
-- Maximum 250 words per chapter
+- Maximum 500 words per chapter
 - Age-appropriate and gentle (no scary content)
 - Include vivid, colorful descriptions
 - Build excitement while remaining calming for bedtime
