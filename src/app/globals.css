@@ -1,26 +1,112 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0a0e1a;
+  --foreground: #e8e4d9;
+  --primary: #3d5a80;
+  --secondary: #98c1d9;
+  --accent: #6b7aa1;
+  --night-blue: #050810;
+  --night-purple: #1a1b3d;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-accent: var(--accent);
+  --font-heading: var(--font-heading);
+  --font-body: var(--font-body);
 }
 
 body {
-  background: var(--background);
+  background: #301508;
+  background: linear-gradient(90deg, rgb(10, 5, 2) 10%, rgba(0, 0, 0, 1) 50%, rgb(20, 20, 21) 100%);
+  min-height: 100vh;
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body), Georgia, serif;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Night sky background with constellation stars */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(2px 2px at 15% 20%, rgba(255,255,255,0.9), transparent),
+    radial-gradient(1px 1px at 85% 15%, rgba(255,255,255,0.7), transparent),
+    radial-gradient(2px 2px at 70% 25%, rgba(255,255,255,0.8), transparent),
+    radial-gradient(1px 1px at 40% 35%, rgba(255,255,255,0.6), transparent),
+    radial-gradient(1px 1px at 90% 45%, rgba(255,255,255,0.7), transparent),
+    radial-gradient(2px 2px at 25% 55%, rgba(255,255,255,0.9), transparent),
+    radial-gradient(1px 1px at 60% 65%, rgba(255,255,255,0.6), transparent),
+    radial-gradient(2px 2px at 80% 75%, rgba(255,255,255,0.8), transparent),
+    radial-gradient(1px 1px at 35% 85%, rgba(255,255,255,0.7), transparent),
+    radial-gradient(1px 1px at 50% 10%, rgba(255,255,255,0.5), transparent);
+  background-size: 100% 100%;
+  opacity: 0.6;
+  animation: twinkle 4s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 0.9; }
+}
+
+/* Smooth transitions */
+* {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* Ensure all buttons have pointer cursor */
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+/* Custom scrollbar - night theme */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 41, 0.5);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #3d5a80, #98c1d9);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #4d6a90, #a8d1e9);
+}
+
+/* Headings use classy font */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading), Georgia, serif;
+  font-weight: 700;
+}
+
+/* Moon animation */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+
+/* Cloud animation */
+@keyframes drift {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100vw); }
 }
