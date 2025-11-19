@@ -12,10 +12,16 @@ import {
 import { generateStoryId } from '@/lib/utils/story';
 import { buttonStyles } from '@/lib/utils/classes';
 import NightSky from '@/components/NightSky';
+import { useTranslation } from '@/hooks/useTranslation';
+import { DEFAULT_LANGUAGE } from '@/constants/languages';
 
 const GeneratingPage = () => {
   const router = useRouter();
-  const [status, setStatus] = useState('Preparing your magical story...');
+  const inputs = getStoryInputs();
+  const currentLanguage = inputs.language || DEFAULT_LANGUAGE;
+  const { t } = useTranslation(currentLanguage);
+  
+  const [status, setStatus] = useState(t('generating.preparing'));
   const [error, setError] = useState('');
   const hasGeneratedRef = useRef(false);
 
@@ -37,18 +43,19 @@ const GeneratingPage = () => {
       }
 
       // Step 1: Generate all chapter texts
-      setStatus('Creating your story...');
+      setStatus(t('generating.creating'));
       const storyResult: any = await generateStoryAPI(inputs);
       const { title, chapters: generatedChapters } = storyResult.data;
 
       // Step 2: Generate illustration ONLY for Chapter 1
-      setStatus('🎨 Creating first chapter illustration...');
+      setStatus(t('generating.illustration'));
       let chapter1WithIllustration = generatedChapters[0];
       
       try {
         const illustrationResult: any = await generateIllustrationAPI(
           chapter1WithIllustration.title,
-          chapter1WithIllustration.content
+          chapter1WithIllustration.content,
+          inputs.characters
         );
         
         chapter1WithIllustration = {
@@ -90,13 +97,13 @@ const GeneratingPage = () => {
       setCurrentStoryId(story.id);
 
       // Navigate to first chapter immediately
-      setStatus('🎉 Your story is ready!');
+      setStatus(t('generating.ready'));
       setTimeout(() => {
         router.push('/story/1');
       }, 500);
     } catch (error) {
       console.error('Error generating story:', error);
-      setError('Oops! Something went wrong. Please try again.');
+      setError(t('generating.error'));
     }
   };
 
@@ -112,7 +119,7 @@ const GeneratingPage = () => {
               onClick={() => router.push('/create')}
               className="px-6 py-3 bg-gradient-to-br from-slate-700 to-slate-800 text-white font-semibold rounded-xl border border-slate-600/50 hover:border-slate-400 hover:shadow-lg hover:shadow-slate-500/30 transition-all cursor-pointer"
             >
-              Try Again
+              {t('generating.tryAgain')}
             </button>
           </div>
         ) : (
@@ -133,7 +140,7 @@ const GeneratingPage = () => {
               {status}
             </h2>
             <p className="text-slate-400">
-              This might take a moment...
+              {t('generating.wait')}
             </p>
 
             {/* Progress dots */}

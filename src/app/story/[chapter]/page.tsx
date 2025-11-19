@@ -12,7 +12,6 @@ import {
 import { Story, Language } from '@/lib/types';
 import ChapterView from '@/components/ChapterView';
 import LanguageSelector from '@/components/LanguageSelector';
-import PDFGenerator from '@/components/PDFGenerator';
 import ConfettiEffect from '@/components/ConfettiEffect';
 import NightSky from '@/components/NightSky';
 import { 
@@ -22,6 +21,8 @@ import {
 } from '@/lib/utils/api';
 import { getTranslatedContent } from '@/lib/utils/story';
 import { buttonStyles } from '@/lib/utils/classes';
+import { useTranslation } from '@/hooks/useTranslation';
+import { DEFAULT_LANGUAGE } from '@/constants/languages';
 
 type ChapterStatus = 'pending' | 'generating' | 'ready' | 'error';
 
@@ -31,7 +32,8 @@ const ChapterPage = () => {
   const chapterNumber = parseInt(params.chapter as string, 10);
 
   const [story, setStory] = useState<Story | null>(null);
-  const [currentLanguage, setCurrentLanguage] = useState<Language>('english');
+  const [currentLanguage, setCurrentLanguage] = useState<Language>(DEFAULT_LANGUAGE);
+  const { t } = useTranslation(currentLanguage);
   const [isTranslating, setIsTranslating] = useState(false);
   const [chapterGenerationStatus, setChapterGenerationStatus] = useState<Record<number, ChapterStatus>>({});
   const [isGeneratingBackground, setIsGeneratingBackground] = useState(false);
@@ -98,7 +100,8 @@ const ChapterPage = () => {
         const result: any = await generateSingleChapterAPI(
           chapter.chapterNumber,
           chapter.title,
-          chapter.content
+          chapter.content,
+          currentStory.inputs?.characters
         );
 
         // Update chapter in localStorage
@@ -147,7 +150,8 @@ const ChapterPage = () => {
       if (updatedStory && !updatedStory.happyEnding) {
         const moralResult: any = await generateHappyEndingAPI(
           updatedStory.title,
-          updatedStory.chapters
+          updatedStory.chapters,
+          updatedStory.inputs?.language
         );
         updateStoryHappyEnding(updatedStory.id, moralResult.data.happyEnding);
         
@@ -227,7 +231,7 @@ const ChapterPage = () => {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="text-6xl mb-4">📚</div>
-          <p className="text-xl text-gray-500">Loading story...</p>
+          <p className="text-xl text-gray-500">{t('chapterPage.loadingStory')}</p>
         </div>
       </div>
     );
@@ -245,12 +249,12 @@ const ChapterPage = () => {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="text-6xl mb-4">❓</div>
-          <p className="text-xl text-gray-500">Chapter not found</p>
+          <p className="text-xl text-gray-500">{t('chapterPage.chapterNotFound')}</p>
           <button
             onClick={() => router.push('/story/1')}
             className={`mt-6 px-6 py-3 ${buttonStyles.primary}`}
           >
-            Go to Chapter 1
+            {t('chapterPage.goToChapter1')}
           </button>
         </div>
       </div>
@@ -268,7 +272,7 @@ const ChapterPage = () => {
             onClick={() => router.push('/')}
             className="text-slate-400 hover:text-slate-200 mb-4 flex items-center gap-2 transition-colors cursor-pointer"
           >
-            ← Back to Home
+            {t('chapterPage.backToHome')}
           </button>
 
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
@@ -281,14 +285,13 @@ const ChapterPage = () => {
                 onLanguageChange={handleLanguageChange}
                 disabled={isTranslating}
               />
-              <PDFGenerator story={story} currentLanguage={currentLanguage} />
             </div>
           </div>
 
           {isTranslating && (
             <div className="bg-slate-800/40 border border-slate-600/50 rounded-lg p-4 mb-6">
               <p className="text-slate-200 text-center">
-                Translating story... This will only take a moment!
+                {t('chapterPage.translating')}
               </p>
             </div>
           )}
@@ -299,6 +302,7 @@ const ChapterPage = () => {
           chapter={currentChapter}
           isLastChapter={isLastChapter}
           happyEnding={isLastChapter ? displayHappyEnding : undefined}
+          language={currentLanguage}
         />
 
 
@@ -311,12 +315,12 @@ const ChapterPage = () => {
               chapterNumber === 1 ? 'invisible' : 'bg-slate-800/50 border-2 border-slate-700/50 text-slate-300 hover:border-slate-500 hover:shadow-md cursor-pointer'
             }`}
           >
-            ← Previous
+            {t('chapterPage.previous')}
           </button>
 
           <div className="text-center">
             <p className="text-sm text-slate-400">
-              Chapter {chapterNumber} of {story.chapters.length}
+              {t('chapter.label')} {chapterNumber} {t('chapterPage.chapterOf')} {story.chapters.length}
             </p>
           </div>
 
@@ -327,7 +331,7 @@ const ChapterPage = () => {
                   onClick={handleNext}
                   className="px-6 py-3 bg-gradient-to-br from-slate-700 to-slate-800 text-white font-semibold rounded-xl border border-slate-600/50 hover:border-slate-400 hover:shadow-lg hover:shadow-slate-500/30 transition-all cursor-pointer"
                 >
-                  Next →
+                  {t('chapterPage.next')}
                 </button>
               ) : chapterGenerationStatus[chapterNumber + 1] === 'generating' ? (
                 <button
@@ -335,7 +339,7 @@ const ChapterPage = () => {
                   className="px-6 py-3 bg-slate-800/30 text-slate-400 font-semibold rounded-xl border border-slate-700/50 cursor-not-allowed flex items-center gap-2"
                 >
                   <div className="w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" />
-                  Preparing...
+                  {t('chapterPage.preparing')}
                 </button>
               ) : chapterGenerationStatus[chapterNumber + 1] === 'error' ? (
                 <button
@@ -350,7 +354,8 @@ const ChapterPage = () => {
                       generateSingleChapterAPI(
                         nextChapter.chapterNumber,
                         nextChapter.title,
-                        nextChapter.content
+                        nextChapter.content,
+                        story.inputs?.characters
                       )
                         .then((result: any) => {
                           updateStoryChapterContent(story.id, nextChapter.chapterNumber, {
@@ -376,14 +381,14 @@ const ChapterPage = () => {
                   }}
                   className="px-6 py-3 bg-red-900/30 text-red-300 font-semibold rounded-xl border border-red-700/50 hover:border-red-500 transition-all cursor-pointer"
                 >
-                  Retry →
+                  {t('chapterPage.retry')}
                 </button>
               ) : (
                 <button
                   disabled
                   className="px-6 py-3 bg-slate-800/30 text-slate-400 font-semibold rounded-xl border border-slate-700/50 cursor-not-allowed"
                 >
-                  Next →
+                  {t('chapterPage.next')}
                 </button>
               )}
             </>
@@ -392,7 +397,7 @@ const ChapterPage = () => {
               onClick={handleCreateNewStory}
               className="px-6 py-3 bg-gradient-to-br from-slate-700 to-slate-800 text-white font-semibold rounded-xl border border-slate-600/50 hover:border-slate-400 hover:shadow-lg hover:shadow-slate-500/30 transition-all cursor-pointer"
             >
-              Create New Story
+              {t('chapterPage.createNewStory')}
             </button>
           )}
         </div>

@@ -5,7 +5,7 @@ import { handleAPIError, formatAPIError } from '@/lib/utils/apiErrorHandler';
 
 export async function POST(request: NextRequest) {
   try {
-    const { chapterNumber, chapterTitle, chapterContent } = await request.json();
+    const { chapterNumber, chapterTitle, chapterContent, characters } = await request.json();
 
     if (!chapterNumber || !chapterTitle || !chapterContent) {
       return NextResponse.json(
@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate illustration for the chapter
-    const prompt = generateIllustrationPrompt(chapterTitle, chapterContent);
+    const prompt = generateIllustrationPrompt(chapterTitle, chapterContent, characters);
     
     const response = await handleAPIError(async () => {
       return await openai.images.generate({

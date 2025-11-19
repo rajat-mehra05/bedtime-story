@@ -4,7 +4,7 @@ import { generateIllustrationPrompt } from '@/lib/prompts';
 
 export async function POST(request: NextRequest) {
   try {
-    const { chapterTitle, chapterContent } = await request.json();
+    const { chapterTitle, chapterContent, characters } = await request.json();
 
     if (!chapterTitle || !chapterContent) {
       return NextResponse.json(
@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const prompt = generateIllustrationPrompt(chapterTitle, chapterContent);
+    const prompt = generateIllustrationPrompt(chapterTitle, chapterContent, characters);
     
     // Generate image using DALL-E 3
     const response = await openai.images.generate({

@@ -5,17 +5,29 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { getAllStories, clearStoryInputs, deleteStory } from '@/lib/localStorage';
 import StoryCard from '@/components/StoryCard';
-import { Story } from '@/lib/types';
+import { Story, Language } from '@/lib/types';
 import NightSky from '@/components/NightSky';
+import { useTranslation } from '@/hooks/useTranslation';
+import { DEFAULT_LANGUAGE } from '@/constants/languages';
 
 const HomePage = () => {
   const router = useRouter();
   const [stories, setStories] = useState<Story[]>([]);
+  const [currentLanguage, setCurrentLanguage] = useState<Language>(DEFAULT_LANGUAGE);
+  const { t } = useTranslation(currentLanguage);
 
   useEffect(() => {
     // Load all saved stories
     const savedStories = getAllStories();
     setStories(savedStories);
+    
+    // Set language from most recent story if available
+    if (savedStories.length > 0) {
+      const latestStory = savedStories[0];
+      if (latestStory.inputs?.language) {
+        setCurrentLanguage(latestStory.inputs.language);
+      }
+    }
   }, []);
 
   const handleCreateNewStory = useCallback(() => {
@@ -48,15 +60,16 @@ const HomePage = () => {
                   fill
                   className="object-cover"
                   priority
+                  sizes="(max-width: 768px) 100vw, (max-width: 1280px) 896px, 896px"
                 />
               </div>
             </div>
             
             <h1 className="text-5xl md:text-7xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-slate-100 via-blue-100 to-indigo-200 drop-shadow-lg">
-              Bedtime Stories
+              {t('home.title')}
             </h1>
             <p className="text-2xl md:text-3xl text-slate-300 font-light tracking-wide">
-              Magical tales for sweet dreams
+              {t('home.subtitle')}
             </p>
           </div>
 
@@ -66,7 +79,7 @@ const HomePage = () => {
               onClick={handleCreateNewStory}
               className="px-12 py-5 text-xl font-semibold bg-gradient-to-br from-slate-800 to-slate-900 text-white rounded-2xl border border-slate-600/50 hover:border-slate-400 hover:shadow-[0_0_40px_rgba(148,163,184,0.25)] transition-all hover:scale-105 transform backdrop-blur-sm cursor-pointer"
             >
-              Create New Story
+              {t('home.createButton')}
             </button>
           </div>
 
@@ -74,11 +87,11 @@ const HomePage = () => {
           {stories.length > 0 && (
             <div>
               <h2 className="text-3xl font-bold text-slate-200 mb-8 text-center">
-                Your Magical Collection
+                {t('home.yourCollection')}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {stories.map((story) => (
-                  <StoryCard key={story.id} story={story} onDelete={handleDeleteStory} />
+                  <StoryCard key={story.id} story={story} onDelete={handleDeleteStory} language={currentLanguage} />
                 ))}
               </div>
             </div>
@@ -86,7 +99,7 @@ const HomePage = () => {
 
           {/* Footer */}
           <div className="text-center mt-24 text-slate-500 text-sm">
-            <p>Made with ❤️ for bedtime adventures</p>
+            <p>{t('home.footer')}</p>
           </div>
         </div>
       </div>

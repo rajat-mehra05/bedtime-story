@@ -2,18 +2,23 @@
 
 import { memo, useCallback } from 'react';
 import Image from 'next/image';
-import { Story } from '@/lib/types';
+import { Story, Language } from '@/lib/types';
 import { useRouter } from 'next/navigation';
 import { formatDate, calculateProgress } from '@/lib/utils/formatting';
 import { cardStyles, buttonStyles, cn } from '@/lib/utils/classes';
+import { useTranslation } from '@/hooks/useTranslation';
+import { DEFAULT_LANGUAGE } from '@/constants/languages';
 
 interface StoryCardProps {
   story: Story;
   onDelete?: (storyId: string) => void;
+  language?: Language;
 }
 
-const StoryCard = ({ story, onDelete }: StoryCardProps) => {
+const StoryCard = ({ story, onDelete, language }: StoryCardProps) => {
   const router = useRouter();
+  const currentLanguage = language || story.inputs?.language || DEFAULT_LANGUAGE;
+  const { t } = useTranslation(currentLanguage);
 
   const handleContinueReading = useCallback(() => {
     router.push(`/story/${story.currentChapter}`);
@@ -21,10 +26,10 @@ const StoryCard = ({ story, onDelete }: StoryCardProps) => {
 
   const handleDelete = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
-    if (onDelete && confirm(`Are you sure you want to delete "${story.title}"?`)) {
+    if (onDelete && confirm(`${t('storyCard.deleteConfirm')} "${story.title}"?`)) {
       onDelete(story.id);
     }
-  }, [onDelete, story.id, story.title]);
+  }, [onDelete, story.id, story.title, t]);
 
   const progress = calculateProgress(story.currentChapter, story.chapters.length);
 
@@ -66,6 +71,9 @@ const StoryCard = ({ story, onDelete }: StoryCardProps) => {
             fill
             className="object-cover"
             sizes="(max-width: 768px) 100vw, (max-width: 1024px) 384px, 384px"
+            onError={(e) => {
+              console.error('Failed to load story illustration:', story.chapters[0]?.illustration);
+            }}
           />
         </div>
       )}
@@ -78,7 +86,7 @@ const StoryCard = ({ story, onDelete }: StoryCardProps) => {
       {/* Story metadata */}
       <div className="flex items-center gap-4 text-sm text-slate-400 mb-4">
         <span className="flex items-center gap-1">
-          📚 {story.chapters.length} chapters
+          📚 {story.chapters.length} {t('storyCard.chapters')}
         </span>
         <span className="flex items-center gap-1">
           🗓️ {formatDate(story.createdAt)}
@@ -88,7 +96,7 @@ const StoryCard = ({ story, onDelete }: StoryCardProps) => {
       {/* Progress bar */}
       <div className="mb-4">
         <div className="flex justify-between text-xs text-slate-400 mb-2">
-          <span>Progress</span>
+          <span>{t('storyCard.progress')}</span>
           <span>{Math.round(progress)}%</span>
         </div>
         <div className="h-2 bg-slate-900/70 rounded-full overflow-hidden">
@@ -101,7 +109,7 @@ const StoryCard = ({ story, onDelete }: StoryCardProps) => {
 
       {/* Continue button */}
       <button className="w-full py-3 bg-gradient-to-br from-slate-700 to-slate-800 text-white font-semibold rounded-xl border border-slate-600/50 hover:border-slate-400 hover:shadow-lg hover:shadow-slate-500/30 transition-all cursor-pointer">
-        Continue Reading →
+        {t('storyCard.continueReading')}
       </button>
     </div>
   );

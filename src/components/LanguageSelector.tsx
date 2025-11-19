@@ -3,6 +3,7 @@
 import { memo, useCallback } from 'react';
 import { Language } from '@/lib/types';
 import { LANGUAGES } from '@/constants/languages';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface LanguageSelectorProps {
   currentLanguage: Language;
@@ -15,13 +16,15 @@ const LanguageSelector = ({
   onLanguageChange,
   disabled = false,
 }: LanguageSelectorProps) => {
+  const { t } = useTranslation(currentLanguage);
+  
   const handleChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
     onLanguageChange(e.target.value as Language);
   }, [onLanguageChange]);
 
   return (
     <div className="flex items-center gap-2">
-      <span className="text-sm text-slate-400 mr-2">Language:</span>
+      <span className="text-sm text-slate-400 mr-2">{t('language.label')}</span>
       <select
         value={currentLanguage}
         onChange={handleChange}
