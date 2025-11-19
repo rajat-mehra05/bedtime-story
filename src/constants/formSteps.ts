@@ -1,7 +1,8 @@
 // Form step configuration
 
-import { StoryInputs } from '@/lib/types';
+import { StoryInputs, Language } from '@/lib/types';
 import { LANGUAGES } from './languages';
+import { getTranslation } from './translations';
 
 export interface FormStep {
   id: number;
@@ -13,10 +14,10 @@ export interface FormStep {
   optional?: boolean;
 }
 
-export const STORY_FORM_STEPS: FormStep[] = [
+export const getStoryFormSteps = (language: Language): FormStep[] => [
   {
     id: 1,
-    question: 'Which language would you like your story in?',
+    question: getTranslation(language, 'form.step1.question'),
     field: 'language',
     type: 'select',
     options: LANGUAGES.map((lang) => ({
@@ -27,36 +28,36 @@ export const STORY_FORM_STEPS: FormStep[] = [
   },
   {
     id: 2,
-    question: 'What kind of story would you like?',
+    question: getTranslation(language, 'form.step2.question'),
     field: 'genre',
     type: 'input',
-    placeholder: 'e.g., Space adventure, Magical forest, Underwater journey...',
+    placeholder: getTranslation(language, 'form.step2.placeholder'),
   },
   {
     id: 3,
-    question: 'Who are the main characters?',
+    question: getTranslation(language, 'form.step3.question'),
     field: 'characters',
     type: 'input',
-    placeholder: 'e.g., A friendly dragon, A curious rabbit, A brave astronaut...',
+    placeholder: getTranslation(language, 'form.step3.placeholder'),
   },
   {
     id: 4,
-    question: 'Any special wishes for your story?',
+    question: getTranslation(language, 'form.step4.question'),
     field: 'additionalPreferences',
     type: 'textarea',
-    placeholder: 'Optional: Add any special elements you\'d like in the story...',
+    placeholder: getTranslation(language, 'form.step4.placeholder'),
     optional: true,
   },
 ];
 
-export const TOTAL_STEPS = STORY_FORM_STEPS.length;
+export const TOTAL_STEPS = 4;
 
-export const getStepByIndex = (index: number): FormStep | undefined => {
-  return STORY_FORM_STEPS[index];
+export const getStepByIndex = (steps: FormStep[], index: number): FormStep | undefined => {
+  return steps[index];
 };
 
-export const isStepOptional = (stepIndex: number): boolean => {
-  const step = getStepByIndex(stepIndex);
+export const isStepOptional = (steps: FormStep[], stepIndex: number): boolean => {
+  const step = getStepByIndex(steps, stepIndex);
   return step?.optional || false;
 };
 

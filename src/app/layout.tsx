@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Playfair_Display, Lora } from "next/font/google";
 import "./globals.css";
 
@@ -18,10 +18,14 @@ const lora = Lora({
 
 export const metadata: Metadata = {
   title: "Bedtime Stories - Magical Tales for Kids",
-  description: "Create personalized bedtime stories for children with beautiful illustrations. AI-powered stories in English, Hindi, and Assamese with PDF export.",
+  description: "Create personalized bedtime stories for children with beautiful illustrations. AI-powered stories in English, Hindi, and Assamese.",
   keywords: "bedtime stories, children stories, AI stories, kids tales, personalized stories",
   authors: [{ name: "Bedtime Stories" }],
-  viewport: "width=device-width, initial-scale=1",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({

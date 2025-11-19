@@ -42,21 +42,23 @@ export const generateStoryAPI = async (inputs: any) => {
 
 export const generateIllustrationAPI = async (
   chapterTitle: string,
-  chapterContent: string
+  chapterContent: string,
+  characters?: string
 ) => {
   return fetchAPI('/api/generate-illustration', {
     method: 'POST',
-    body: { chapterTitle, chapterContent },
+    body: { chapterTitle, chapterContent, characters },
   });
 };
 
 export const generateHappyEndingAPI = async (
   storyTitle: string,
-  chapters: any[]
+  chapters: any[],
+  language?: string
 ) => {
   return fetchAPI('/api/generate-happy-ending', {
     method: 'POST',
-    body: { storyTitle, chapters },
+    body: { storyTitle, chapters, language },
   });
 };
 
@@ -70,11 +72,12 @@ export const translateStoryAPI = async (storyData: any, targetLanguage: string) 
 export const generateSingleChapterAPI = async (
   chapterNumber: number,
   chapterTitle: string,
-  chapterContent: string
+  chapterContent: string,
+  characters?: string
 ) => {
   return fetchAPI('/api/generate-single-chapter', {
     method: 'POST',
-    body: { chapterNumber, chapterTitle, chapterContent },
+    body: { chapterNumber, chapterTitle, chapterContent, characters },
   });
 };
 

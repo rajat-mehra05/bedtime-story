@@ -1,13 +1,14 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import ProgressBar from './ProgressBar';
 import { saveStoryInputs, getStoryInputs } from '@/lib/localStorage';
-import { StoryInputs } from '@/lib/types';
-import { STORY_FORM_STEPS, TOTAL_STEPS, isStepOptional } from '@/constants/formSteps';
+import { StoryInputs, Language } from '@/lib/types';
+import { getStoryFormSteps, TOTAL_STEPS, isStepOptional } from '@/constants/formSteps';
 import { DEFAULT_LANGUAGE } from '@/constants/languages';
 import { cn, buttonStyles, inputStyles, animationStyles } from '@/lib/utils/classes';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const StepForm = () => {
   const router = useRouter();
@@ -15,6 +16,27 @@ const StepForm = () => {
   const [formData, setFormData] = useState<Partial<StoryInputs>>({});
   const [currentAnswer, setCurrentAnswer] = useState('');
   const [isAnimating, setIsAnimating] = useState(false);
+  const [pendingStepChange, setPendingStepChange] = useState<number | null>(null);
+
+  // Get current language for translations
+  const currentLanguage = (formData.language as Language) || DEFAULT_LANGUAGE;
+  const { t } = useTranslation(currentLanguage);
+  
+  // Get form steps based on current language
+  const STORY_FORM_STEPS = useMemo(() => getStoryFormSteps(currentLanguage), [currentLanguage]);
+
+  // Handle pending step changes after language updates
+  useEffect(() => {
+    if (pendingStepChange !== null) {
+      setIsAnimating(true);
+      const timer = setTimeout(() => {
+        setCurrentStep(pendingStepChange);
+        setIsAnimating(false);
+        setPendingStepChange(null);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [pendingStepChange]);
 
   useEffect(() => {
     // Load saved inputs
@@ -33,10 +55,10 @@ const StepForm = () => {
     const step = STORY_FORM_STEPS[currentStep - 1];
     const value = formData[step.field];
     setCurrentAnswer(value ? String(value) : '');
-  }, [currentStep, formData]);
+  }, [currentStep, formData, STORY_FORM_STEPS]);
 
   const handleNext = useCallback(() => {
-    const currentStepOptional = isStepOptional(currentStep - 1);
+    const currentStepOptional = isStepOptional(STORY_FORM_STEPS, currentStep - 1);
     if (!currentAnswer.trim() && !currentStepOptional) return;
 
     setIsAnimating(true);
@@ -56,7 +78,7 @@ const StepForm = () => {
         router.push('/story/generating');
       }
     }, 300);
-  }, [currentStep, currentAnswer, formData, router]);
+  }, [currentStep, currentAnswer, formData, router, STORY_FORM_STEPS]);
 
   const handleBack = useCallback(() => {
     if (currentStep > 1) {
@@ -91,7 +113,7 @@ const StepForm = () => {
           {/* Step counter */}
           <div className="text-center mb-8">
             <span className="text-sm font-medium text-slate-400">
-              Step {currentStep} of {TOTAL_STEPS}
+              {t('form.step.label')} {currentStep} {t('form.step.of')} {TOTAL_STEPS}
             </span>
           </div>
 
@@ -108,8 +130,22 @@ const StepForm = () => {
                   <button
                     key={option.value}
                     onClick={() => {
-                      setCurrentAnswer(option.value);
-                      setTimeout(() => handleNext(), 100);
+                      // If this is language selection, handle it specially to ensure UI updates
+                      if (currentStepData.field === 'language') {
+                        setCurrentAnswer(option.value);
+                        const updatedData = { ...formData, language: option.value as Language };
+                        setFormData(updatedData);
+                        saveStoryInputs(updatedData);
+                        
+                        // Use pendingStepChange to ensure language updates before moving to next step
+                        if (currentStep < TOTAL_STEPS) {
+                          setPendingStepChange(currentStep + 1);
+                        }
+                      } else {
+                        // For non-language selections, proceed normally
+                        setCurrentAnswer(option.value);
+                        setTimeout(() => handleNext(), 100);
+                      }
                     }}
                     className={`w-full p-6 rounded-2xl border-2 transition-all duration-200 text-left flex items-center gap-4 cursor-pointer ${
                       currentAnswer === option.value
@@ -157,21 +193,21 @@ const StepForm = () => {
                 )}
                 disabled={currentStep === 1}
               >
-                ← Back
+                {t('form.back')}
               </button>
 
             {currentStepData.type !== 'select' && (
              <button
                 onClick={handleNext}
-                disabled={!currentAnswer.trim() && !isStepOptional(currentStep - 1)}
+                disabled={!currentAnswer.trim() && !isStepOptional(STORY_FORM_STEPS, currentStep - 1)}
                 className={cn(
                   'px-8 py-3 rounded-xl font-semibold transition-all',
-                  currentAnswer.trim() || isStepOptional(currentStep - 1)
+                  currentAnswer.trim() || isStepOptional(STORY_FORM_STEPS, currentStep - 1)
                     ? 'bg-gradient-to-br from-slate-700 to-slate-800 text-white border border-slate-600/50 hover:border-slate-400 hover:shadow-lg hover:shadow-slate-500/30 hover:scale-105 cursor-pointer'
                     : 'bg-gray-800 text-gray-600 cursor-not-allowed'
                 )}
              >
-                 {currentStep === TOTAL_STEPS ? 'Create Story' : 'Next →'}
+                 {currentStep === TOTAL_STEPS ? t('form.createStory') : t('form.next')}
              </button>
            )}
         </div>
@@ -179,7 +215,7 @@ const StepForm = () => {
           {/* Hint text */}
           {currentStepData.type !== 'select' && (
             <p className="text-center text-sm text-slate-500 mt-6">
-              Press Enter ↵
+              {t('form.pressEnter')}
             </p>
           )}
         </div>

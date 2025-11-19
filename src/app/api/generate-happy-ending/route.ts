@@ -5,7 +5,7 @@ import { handleAPIError, formatAPIError } from '@/lib/utils/apiErrorHandler';
 
 export async function POST(request: NextRequest) {
   try {
-    const { storyTitle, chapters } = await request.json();
+    const { storyTitle, chapters, language } = await request.json();
 
     if (!storyTitle || !chapters || chapters.length === 0) {
       return NextResponse.json(
@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     }
 
     const chaptersContent = chapters.map((ch: { content: string }) => ch.content);
-    const prompt = generateMoralPrompt(storyTitle, chaptersContent);
+    const prompt = generateMoralPrompt(storyTitle, chaptersContent, language);
     
     // Use error handler with automatic fallback
     const completion = await handleAPIError(async () => {
